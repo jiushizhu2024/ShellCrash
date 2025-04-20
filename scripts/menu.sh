@@ -1,5 +1,22 @@
-#!/bin/sh
+#!/bin/ash
 # Copyright (C) Juewuy
+
+# --- Start: Add lock file mechanism ---
+LOCK_FILE="${TMPDIR:-/tmp}/menu.lock"
+if [ -e "$LOCK_FILE" ]; then
+    # Optional: Check if the process holding the lock is still running
+    # lock_pid=$(cat "$LOCK_FILE")
+    # if ps | grep -q "^ *$lock_pid "; then
+        echo "另一个 menu.sh 实例已经在运行。正在退出。"
+        exit 1
+    # else
+    #    echo "发现陈旧的锁文件，正在移除。"
+    #    rm -f "$LOCK_FILE"
+    # fi
+fi
+echo $$ > "$LOCK_FILE"
+trap 'rm -f "$LOCK_FILE"; exit' INT TERM EXIT
+# --- End: Add lock file mechanism ---
 
 CRASHDIR=$(
 	cd $(dirname $0)
@@ -2167,7 +2184,7 @@ case "$1" in
 	echo -----------------------------------------
 	;;
 -t)
-	shtype=sh && [ -n "$(ls -l /bin/sh | grep -o dash)" ] && shtype=bash
+	shtype=sh && [ -n "$(ls -l /bin/ash | grep -o dash)" ] && shtype=bash
 	$shtype -x ${CRASHDIR}/menu.sh
 	;;
 -s)
@@ -2177,11 +2194,11 @@ case "$1" in
 	source ${CRASHDIR}/init.sh
 	;;
 -st)
-	shtype=sh && [ -n "$(ls -l /bin/sh | grep -o dash)" ] && shtype=bash
+	shtype=sh && [ -n "$(ls -l /bin/ash | grep -o dash)" ] && shtype=bash
 	$shtype -x ${CRASHDIR}/start.sh $2 $3 $4 $5 $6
 	;;
 -d)
-	shtype=sh && [ -n "$(ls -l /bin/sh | grep -o dash)" ] && shtype=bash
+	shtype=sh && [ -n "$(ls -l /bin/ash | grep -o dash)" ] && shtype=bash
 	echo -e "正在测试运行！如发现错误请截图后前往\033[32;4mt.me/ShellClash\033[0m咨询"
 	$shtype ${CRASHDIR}/start.sh debug >/dev/null 2>${TMPDIR}/debug_sh_bug.log
 	$shtype -x ${CRASHDIR}/start.sh debug >/dev/null 2>${TMPDIR}/debug_sh.log
